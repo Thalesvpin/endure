@@ -6,9 +6,18 @@
 // Variáveis globais para armazenar os dados do objeto
 GLfloat *vertices = NULL;
 int numVertices = 0;
+GLfloat angle=45;
+GLfloat fAspect;
+
+// [x,y,z]camera, [x,y,z]alvo, [x,y,z]vetor up
+int cam[3][3] = { {0, 0, 0},
+				  {0, 2, 0},
+				  {0, 1, 0}
+};
 
 // Função para carregar o arquivo .obj
 void loadObjFile(const char *filename) {
+    printf("aqui\n");
     FILE *file = fopen(filename, "r");
     if (!file) {
         printf("Erro ao abrir o arquivo .obj\n");
@@ -32,7 +41,7 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    glTranslatef(0.0f, 0.0f, -5.0f);
+    //glTranslatef(0.0f, 0.0f, -5.0f);
 
     // Renderize seu objeto aqui
     glBegin(GL_TRIANGLES);
@@ -42,6 +51,41 @@ void display() {
     glEnd();
 
     glutSwapBuffers();
+}
+
+void EspecificaParametrosVisualizacao(void)
+{
+	// Especifica sistema de coordenadas de projeção
+	glMatrixMode(GL_PROJECTION);
+	// Inicializa sistema de coordenadas de projeção
+	glLoadIdentity();
+
+    // Especifica a projeção perspectiva
+    gluPerspective(angle,fAspect,0.5,500);
+
+	// Especifica sistema de coordenadas do modelo
+	glMatrixMode(GL_MODELVIEW);
+	// Inicializa sistema de coordenadas do modelo
+	glLoadIdentity();
+
+	// Especifica posição do observador e do alvo
+	gluLookAt(cam[0][0],cam[0][1],cam[0][2],cam[1][0],cam[1][1],cam[1][2],cam[2][0],cam[2][1],cam[2][2]);
+	//gluLookAt([x,y,z]camera, [x,y,z]alvo, [x,y,z]vetor up)
+}
+
+// Função callback chamada quando o tamanho da janela é alterado 
+void AlteraTamanhoJanela(GLsizei w, GLsizei h)
+{
+	// Para previnir uma divisão por zero
+	if ( h == 0 ) h = 1;
+
+	// Especifica o tamanho da viewport
+	glViewport(0, 0, w, h);
+ 
+	// Calcula a correção de aspecto
+	fAspect = (GLfloat)w/(GLfloat)h;
+
+	EspecificaParametrosVisualizacao();
 }
 
 // Função principal
@@ -55,10 +99,11 @@ int main(int argc, char **argv) {
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(800, 600);
+    glutInitWindowSize(1300, 800);
     glutCreateWindow("Objeto 3D");
 
     glutDisplayFunc(display);
+    glutReshapeFunc(AlteraTamanhoJanela);
     glEnable(GL_DEPTH_TEST);
 
     glutMainLoop();
